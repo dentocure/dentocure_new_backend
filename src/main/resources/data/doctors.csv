@@ -1,0 +1,6 @@
+id,name,specialization,phone,email,color,active,working_hours
+DR001,Dr. Priya Sharma,Orthodontist,9876543210,priya.sharma@dentocure.com,#3B82F6,true,09:00-17:00
+DR002,Dr. Rahul Mehta,Endodontist,9876543211,rahul.mehta@dentocure.com,#10B981,true,09:00-17:00
+DR003,Dr. Sunita Patel,Periodontist,9876543212,sunita.patel@dentocure.com,#F59E0B,true,10:00-18:00
+DR004,Dr. Arun Kumar,Oral Surgeon,9876543213,arun.kumar@dentocure.com,#EF4444,true,08:00-16:00
+DR005,Dr. Neha Joshi,Pedodontist,9876543214,neha.joshi@dentocure.com,#8B5CF6,false,09:00-17:00

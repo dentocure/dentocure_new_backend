@@ -1,0 +1,16 @@
+id,patient_id,doctor_id,type,date,time,duration,status,notes,emergency
+AP001,PT001,DR001,Checkup,2026-03-12,09:00,30,Scheduled,,false
+AP002,PT002,DR002,Root Canal,2026-03-12,09:30,60,In-Chair,,false
+AP003,PT003,DR003,Cleaning,2026-03-12,10:00,30,Scheduled,,false
+AP004,PT004,DR001,Braces Adjustment,2026-03-12,10:30,30,Scheduled,,false
+AP005,PT005,DR004,Extraction,2026-03-12,11:00,45,Scheduled,Emergency toothache,true
+AP006,PT006,DR002,Filling,2026-03-12,11:30,30,Completed,,false
+AP007,PT007,DR003,Deep Cleaning,2026-03-12,13:00,60,Scheduled,,false
+AP008,PT008,DR001,Consultation,2026-03-12,14:00,30,Scheduled,,false
+AP009,PT009,DR004,X-Ray,2026-03-12,14:30,30,No-show,,false
+AP010,PT010,DR002,Checkup,2026-03-12,15:00,30,Scheduled,,false
+AP011,PT001,DR001,Follow-up,2026-03-15,09:00,30,Scheduled,,false
+AP012,PT003,DR002,Root Canal,2026-03-16,10:00,60,Scheduled,,false
+AP013,PT005,DR003,Cleaning,2026-03-18,11:00,30,Scheduled,,false
+AP014,PT007,DR004,Extraction,2026-03-20,09:30,45,Scheduled,,false
+AP015,PT002,DR001,Braces Check,2026-03-22,14:00,30,Scheduled,,false

@@ -1,0 +1,11 @@
+id,name,phone,email,dob,gender,blood_group,allergies,emerg_contact,referred_by,notes,active
+PT001,Ravi Shankar,9811111111,ravi.shankar@example.com,1985-03-15,Male,B+,Penicillin,9811111110,Walk-in,,true
+PT002,Anita Desai,9822222222,anita.desai@example.com,1990-07-22,Female,A+,,9822222221,Dr. Mehta,History of gum disease,true
+PT003,Vikram Singh,9833333333,vikram.singh@example.com,1975-11-08,Male,O+,Aspirin;Ibuprofen,9833333332,Online,,true
+PT004,Kavita Nair,9844444444,kavita.nair@example.com,2000-02-14,Female,AB-,,9844444443,Walk-in,,true
+PT005,Suresh Patel,9855555555,suresh.patel@example.com,1968-09-30,Male,B-,,9855555554,Referral,Diabetic - handle anaesthesia carefully,true
+PT006,Meena Krishnan,9866666666,meena.krishnan@example.com,1995-04-18,Female,A-,,9866666665,Walk-in,,true
+PT007,Arjun Reddy,9877777777,arjun.reddy@example.com,1988-12-05,Male,O-,Latex,9877777776,Dr. Patel,,true
+PT008,Pooja Gupta,9888888888,pooja.gupta@example.com,2005-06-20,Female,B+,,9888888887,Walk-in,,true
+PT009,Ramesh Yadav,9899999999,ramesh.yadav@example.com,1960-01-25,Male,A+,,9899999998,Referral,Hypertensive - monitor carefully,true
+PT010,Deepa Verma,9800000000,deepa.verma@example.com,1993-08-11,Female,O+,,9800000001,Online,,true
