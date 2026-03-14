@@ -1,17 +1,14 @@
 package com.dentocure.config;
 
-import com.dentocure.model.Appointment;
-import com.dentocure.model.Doctor;
-import com.dentocure.model.Patient;
-import com.dentocure.repository.AppointmentRepository;
-import com.dentocure.repository.DoctorRepository;
-import com.dentocure.repository.PatientRepository;
+import com.dentocure.model.*;
+import com.dentocure.repository.*;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStreamReader;
@@ -39,22 +36,59 @@ public class DataLoader implements CommandLineRunner {
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
     private final AppointmentRepository appointmentRepository;
+    private final UserRepository userRepository;
 
     public DataLoader(DoctorRepository doctorRepository,
                       PatientRepository patientRepository,
-                      AppointmentRepository appointmentRepository) {
+                      AppointmentRepository appointmentRepository,
+                      UserRepository userRepository) {
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
         this.appointmentRepository = appointmentRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
     public void run(String... args) throws Exception {
+        loadUsers();
         loadDoctors();
         loadPatients();
         loadAppointments();
-        log.info("Sample data loaded: {} doctors, {} patients, {} appointments",
-                doctorRepository.count(), patientRepository.count(), appointmentRepository.count());
+        log.info("Sample data loaded: {} users, {} doctors, {} patients, {} appointments",
+                userRepository.count(), doctorRepository.count(), patientRepository.count(), appointmentRepository.count());
+    }
+
+    // ── Create sample users with authentication ───────────────────────────────
+
+    private void loadUsers() {
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
+
+        // Admin user
+        User admin = new User();
+        admin.setUsername("admin");
+        admin.setPassword(passwordEncoder.encode("admin123"));
+        admin.setEmail("admin@dentocure.com");
+        admin.setRole(Role.ADMIN);
+        admin.setActive(true);
+        userRepository.save(admin);
+
+        // Doctor user
+        User doctor = new User();
+        doctor.setUsername("doctor");
+        doctor.setPassword(passwordEncoder.encode("doctor123"));
+        doctor.setEmail("doctor@dentocure.com");
+        doctor.setRole(Role.DOCTOR);
+        doctor.setActive(true);
+        userRepository.save(doctor);
+
+        // Receptionist user
+        User receptionist = new User();
+        receptionist.setUsername("receptionist");
+        receptionist.setPassword(passwordEncoder.encode("receptionist123"));
+        receptionist.setEmail("receptionist@dentocure.com");
+        receptionist.setRole(Role.RECEPTIONIST);
+        receptionist.setActive(true);
+        userRepository.save(receptionist);
     }
 
     // ── CSV: id, name, specialization, phone, email, color, active ───────────
@@ -163,3 +197,4 @@ public class DataLoader implements CommandLineRunner {
         return "{\"start\":\"09:00\",\"end\":\"17:00\"}";
     }
 }
+

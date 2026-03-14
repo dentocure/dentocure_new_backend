@@ -18,6 +18,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -53,6 +54,7 @@ public class AppointmentController {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Appointment list returned with pagination meta")
     })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR') or hasRole('RECEPTIONIST')")
     @GetMapping
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> getAppointments(
             @Parameter(description = "Filter by exact date (YYYY-MM-DD)", example = "2026-03-12")
@@ -91,6 +93,7 @@ public class AppointmentController {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Today's appointments returned")
     })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR') or hasRole('RECEPTIONIST')")
     @GetMapping("/today")
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> getTodayAppointments() {
         return ResponseEntity.ok(com.dentocure.dto.ApiResponse.of(appointmentService.getTodayAppointments()));
@@ -114,6 +117,7 @@ public class AppointmentController {
         @ApiResponse(responseCode = "200", description = "Slot list returned"),
         @ApiResponse(responseCode = "404", description = "Doctor not found")
     })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR') or hasRole('RECEPTIONIST')")
     @GetMapping("/slots")
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> getAvailableSlots(
             @Parameter(description = "Doctor ID to check slots for", required = true, example = "DR001")
@@ -136,6 +140,7 @@ public class AppointmentController {
                 examples = @ExampleObject(value = """
                     {"error":{"code":"NOT_FOUND","message":"Appointment not found with id: AP999"}}""")))
     })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR') or hasRole('RECEPTIONIST')")
     @GetMapping("/{id}")
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> getAppointmentById(
             @Parameter(description = "Appointment ID (e.g. AP001)", example = "AP001")
@@ -166,6 +171,7 @@ public class AppointmentController {
                 examples = @ExampleObject(value = """
                     {"error":{"code":"CONFLICT","message":"Doctor already has an appointment overlapping the requested time slot"}}""")))
     })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('RECEPTIONIST')")
     @PostMapping
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> createAppointment(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -198,6 +204,7 @@ public class AppointmentController {
         @ApiResponse(responseCode = "404", description = "Appointment not found"),
         @ApiResponse(responseCode = "409", description = "Booking conflict")
     })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('RECEPTIONIST')")
     @PutMapping("/{id}")
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> updateAppointment(
             @Parameter(description = "Appointment ID", example = "AP001") @PathVariable String id,
@@ -228,6 +235,7 @@ public class AppointmentController {
                     {"error":{"code":"INVALID_REQUEST","message":"Invalid status 'Done'. Allowed: [Scheduled, In-Chair, Completed, Cancelled, No-show]"}}"""))),
         @ApiResponse(responseCode = "404", description = "Appointment not found")
     })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR') or hasRole('RECEPTIONIST')")
     @PatchMapping("/{id}/status")
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> updateStatus(
             @Parameter(description = "Appointment ID", example = "AP001") @PathVariable String id,
@@ -253,6 +261,7 @@ public class AppointmentController {
         @ApiResponse(responseCode = "200", description = "Appointment cancelled"),
         @ApiResponse(responseCode = "404", description = "Appointment not found")
     })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('RECEPTIONIST')")
     @DeleteMapping("/{id}")
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> cancelAppointment(
             @Parameter(description = "Appointment ID", example = "AP001") @PathVariable String id) {

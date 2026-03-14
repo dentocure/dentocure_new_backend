@@ -16,6 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -41,6 +42,7 @@ public class DoctorController {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "List of doctors returned successfully")
     })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR') or hasRole('RECEPTIONIST')")
     @GetMapping
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> getAllDoctors() {
         return ResponseEntity.ok(com.dentocure.dto.ApiResponse.of(doctorService.getAllDoctors()));
@@ -59,6 +61,7 @@ public class DoctorController {
                 examples = @ExampleObject(value = """
                     {"error":{"code":"NOT_FOUND","message":"Doctor not found with id: DR999"}}""")))
     })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR') or hasRole('RECEPTIONIST')")
     @GetMapping("/{id}")
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> getDoctorById(
             @Parameter(description = "Doctor ID (e.g. DR001)", example = "DR001")
@@ -79,6 +82,7 @@ public class DoctorController {
                 examples = @ExampleObject(value = """
                     {"error":{"code":"VALIDATION_ERROR","message":"Request validation failed","details":["name: Name is required"]}}""")))
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> createDoctor(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -109,6 +113,7 @@ public class DoctorController {
         @ApiResponse(responseCode = "200", description = "Doctor updated"),
         @ApiResponse(responseCode = "404", description = "Doctor not found")
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> updateDoctor(
             @Parameter(description = "Doctor ID", example = "DR001") @PathVariable String id,
@@ -126,6 +131,7 @@ public class DoctorController {
         @ApiResponse(responseCode = "200", description = "Status updated"),
         @ApiResponse(responseCode = "404", description = "Doctor not found")
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/status")
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> updateDoctorStatus(
             @Parameter(description = "Doctor ID", example = "DR005") @PathVariable String id,
@@ -148,6 +154,7 @@ public class DoctorController {
         @ApiResponse(responseCode = "200", description = "Doctor deactivated"),
         @ApiResponse(responseCode = "404", description = "Doctor not found")
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> deleteDoctor(
             @Parameter(description = "Doctor ID", example = "DR001") @PathVariable String id) {
@@ -165,6 +172,7 @@ public class DoctorController {
         @ApiResponse(responseCode = "200", description = "Schedule returned"),
         @ApiResponse(responseCode = "404", description = "Doctor not found")
     })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR') or hasRole('RECEPTIONIST')")
     @GetMapping("/{id}/schedule")
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> getDoctorSchedule(
             @Parameter(description = "Doctor ID", example = "DR001") @PathVariable String id,
@@ -184,6 +192,7 @@ public class DoctorController {
         @ApiResponse(responseCode = "200", description = "Availability info returned"),
         @ApiResponse(responseCode = "404", description = "Doctor not found")
     })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR') or hasRole('RECEPTIONIST')")
     @GetMapping("/{id}/availability")
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> getDoctorAvailability(
             @Parameter(description = "Doctor ID", example = "DR002") @PathVariable String id) {
