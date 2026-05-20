@@ -25,6 +25,8 @@ Sample data is loaded automatically on startup:
 - 5 doctors
 - 10 patients
 - 15 appointments (10 for today)
+- 8 invoices (Paid, Partially Paid, Unpaid, Draft, Void)
+- 3 payment records
 
 ---
 
@@ -52,6 +54,12 @@ Browse the in-memory database at **http://localhost:8080/h2-console**
 | Password | *(leave blank)* |
 
 > **Note:** Data resets on every restart since the database is in-memory.
+
+---
+
+## API Documentation (Swagger UI)
+
+Interactive API docs are available at **http://localhost:8080/swagger-ui.html**
 
 ---
 
@@ -88,7 +96,7 @@ POST   /api/patients                       Create a new patient
 PUT    /api/patients/{id}                  Update patient details
 DELETE /api/patients/{id}                  Soft-delete (sets active=false)
 GET    /api/patients/{id}/appointments     All appointments for a patient
-GET    /api/patients/{id}/invoices         Invoices (stub — returns empty list)
+GET    /api/patients/{id}/invoices         All invoices for a patient
 GET    /api/patients/{id}/reminders        Reminders (stub — returns empty list)
 ```
 
@@ -103,6 +111,19 @@ POST   /api/appointments                   Create an appointment (conflict detec
 PUT    /api/appointments/{id}              Update appointment
 PATCH  /api/appointments/{id}/status       Update status only
 DELETE /api/appointments/{id}              Cancel appointment
+```
+
+### Billing & Invoices — `/api/invoices`
+
+```
+GET    /api/invoices                       List invoices (filterable + paginated)
+GET    /api/invoices/{id}                  Get a single invoice with line items
+POST   /api/invoices                       Create a new invoice
+PUT    /api/invoices/{id}                  Update invoice (Draft status only)
+DELETE /api/invoices/{id}                  Void an invoice
+POST   /api/invoices/{id}/payments         Record a payment against an invoice
+GET    /api/invoices/{id}/payments         List all payments for an invoice
+GET    /api/invoices/{id}/pdf              Get PDF info (stub — full generation not yet implemented)
 ```
 
 ---
@@ -177,6 +198,49 @@ curl -X PATCH http://localhost:8080/api/doctors/DR005/status \
   -d '{"status": "active"}'
 ```
 
+### List invoices filtered by status
+```bash
+curl "http://localhost:8080/api/invoices?status=Unpaid&page=1&limit=20"
+```
+
+### Create a new invoice
+```bash
+curl -X POST http://localhost:8080/api/invoices \
+  -H "Content-Type: application/json" \
+  -d '{
+    "patientId": "PT001",
+    "appointmentId": "AP001",
+    "date": "2026-05-21",
+    "items": [
+      { "name": "Root Canal Treatment", "qty": 1, "unitPrice": 3500.00, "discount": 200.00 },
+      { "name": "X-Ray", "qty": 2, "unitPrice": 300.00 }
+    ],
+    "notes": "Post-treatment care included",
+    "status": "Draft"
+  }'
+```
+
+### Record a payment against an invoice
+```bash
+curl -X POST http://localhost:8080/api/invoices/INV001/payments \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 1500.00,
+    "paymentMethod": "UPI",
+    "notes": "Google Pay — ref #XYZ123"
+  }'
+```
+
+### Get all payments for an invoice
+```bash
+curl http://localhost:8080/api/invoices/INV001/payments
+```
+
+### Get all invoices for a patient
+```bash
+curl http://localhost:8080/api/patients/PT001/invoices
+```
+
 ---
 
 ## Query Parameters
@@ -204,6 +268,43 @@ curl -X PATCH http://localhost:8080/api/doctors/DR005/status \
 | Param | Type | Description |
 |-------|------|-------------|
 | `date` | YYYY-MM-DD | Date to fetch schedule for (default: today) |
+
+### `GET /api/invoices`
+| Param | Type | Description |
+|-------|------|-------------|
+| `status` | string | `Draft` / `Unpaid` / `Partially Paid` / `Paid` / `Void` |
+| `patientId` | string | Filter by patient |
+| `dateFrom` | YYYY-MM-DD | Start of date range |
+| `dateTo` | YYYY-MM-DD | End of date range |
+| `search` | string | Invoice number substring (e.g. `INV-001`) |
+| `page` | int | Page number (default: 1) |
+| `limit` | int | Page size (default: 20, max: 100) |
+
+---
+
+## Billing Calculations
+
+All financial fields are computed server-side — never trusted from the client:
+
+```
+lineTotal   = qty × unitPrice − discount
+subtotal    = Σ lineTotals
+gstAmount   = subtotal × gstRate (default 18%)
+grandTotal  = subtotal + gstAmount
+balanceDue  = grandTotal − paidAmount
+```
+
+Invoice status is auto-derived after each payment:
+
+| Condition | Status |
+|-----------|--------|
+| `balanceDue == 0` | `Paid` |
+| `paidAmount > 0` and `balanceDue > 0` | `Partially Paid` |
+| `paidAmount == 0` | `Unpaid` |
+
+- Invoices can only be edited while in `Draft` status
+- Voided invoices do not accept payments
+- Accepted payment methods: `Cash`, `UPI`, `Card`, `Net Banking`, `Insurance`
 
 ---
 
@@ -236,7 +337,7 @@ Errors follow this shape:
 | 201 | Created |
 | 400 | Validation error / bad request |
 | 404 | Resource not found |
-| 409 | Conflict (duplicate phone, double-booking) |
+| 409 | Conflict (duplicate phone, double-booking, already paid) |
 | 500 | Internal server error |
 
 ---
@@ -262,3 +363,16 @@ Errors follow this shape:
 | PT005 | Suresh Patel | 9855555555 | Diabetic |
 | PT007 | Arjun Reddy | 9877777777 | Allergic: Latex |
 | PT009 | Ramesh Yadav | 9899999999 | Hypertensive |
+
+### Invoices
+
+| ID | Invoice No. | Patient | Grand Total | Status |
+|----|-------------|---------|-------------|--------|
+| INV001 | INV-0001 | PT001 – Ravi Shankar | ₹944.00 | Paid |
+| INV002 | INV-0002 | PT002 – Anita Desai | ₹4,602.00 | Partially Paid |
+| INV003 | INV-0003 | PT006 – Meena Krishnan | ₹1,416.00 | Paid |
+| INV004 | INV-0004 | PT003 – Vikram Singh | ₹1,298.00 | Unpaid |
+| INV005 | INV-0005 | PT005 – Suresh Patel | ₹2,124.00 | Unpaid |
+| INV006 | INV-0006 | PT004 – Kavita Nair | ₹767.00 | Draft |
+| INV007 | INV-0007 | PT009 – Ramesh Yadav | ₹354.00 | Void |
+| INV008 | INV-0008 | PT007 – Arjun Reddy | ₹2,714.00 | Unpaid |
