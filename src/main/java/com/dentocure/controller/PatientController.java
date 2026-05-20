@@ -3,6 +3,7 @@ package com.dentocure.controller;
 import com.dentocure.dto.PageMeta;
 import com.dentocure.dto.PatientRequest;
 import com.dentocure.model.Patient;
+import com.dentocure.service.InvoiceService;
 import com.dentocure.service.PatientService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -18,7 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 @Tag(name = "Patients", description = "Patient registration and medical records")
@@ -27,9 +28,11 @@ import java.util.Map;
 public class PatientController {
 
     private final PatientService patientService;
+    private final InvoiceService invoiceService;
 
-    public PatientController(PatientService patientService) {
+    public PatientController(PatientService patientService, InvoiceService invoiceService) {
         this.patientService = patientService;
+        this.invoiceService = invoiceService;
     }
 
     // ── List ──────────────────────────────────────────────────────────────────
@@ -179,21 +182,20 @@ public class PatientController {
         return ResponseEntity.ok(com.dentocure.dto.ApiResponse.of(patientService.getPatientAppointments(id)));
     }
 
-    // ── Invoices (stub) ───────────────────────────────────────────────────────
+    // ── Invoices ──────────────────────────────────────────────────────────────
 
     @Operation(
-        summary = "Get invoices for a patient",
-        description = "**Not yet implemented.** Returns an empty list. Invoices module is planned for v1.1."
+        summary = "Get all invoices for a patient",
+        description = "Returns invoice history for a patient, sorted by date descending."
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Empty list (module not yet implemented)"),
+        @ApiResponse(responseCode = "200", description = "Invoices returned"),
         @ApiResponse(responseCode = "404", description = "Patient not found")
     })
     @GetMapping("/{id}/invoices")
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> getPatientInvoices(
             @Parameter(description = "Patient ID", example = "PT001") @PathVariable String id) {
-        patientService.getPatientById(id);
-        return ResponseEntity.ok(com.dentocure.dto.ApiResponse.of(Collections.emptyList()));
+        return ResponseEntity.ok(com.dentocure.dto.ApiResponse.of(invoiceService.getInvoicesByPatient(id)));
     }
 
     // ── Reminders (stub) ──────────────────────────────────────────────────────
@@ -210,6 +212,6 @@ public class PatientController {
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> getPatientReminders(
             @Parameter(description = "Patient ID", example = "PT001") @PathVariable String id) {
         patientService.getPatientById(id);
-        return ResponseEntity.ok(com.dentocure.dto.ApiResponse.of(Collections.emptyList()));
+        return ResponseEntity.ok(com.dentocure.dto.ApiResponse.of(List.of()));
     }
 }

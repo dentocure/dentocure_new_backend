@@ -2,10 +2,14 @@ package com.dentocure.config;
 
 import com.dentocure.model.Appointment;
 import com.dentocure.model.Doctor;
+import com.dentocure.model.Invoice;
 import com.dentocure.model.Patient;
+import com.dentocure.model.Payment;
 import com.dentocure.repository.AppointmentRepository;
 import com.dentocure.repository.DoctorRepository;
+import com.dentocure.repository.InvoiceRepository;
 import com.dentocure.repository.PatientRepository;
+import com.dentocure.repository.PaymentRepository;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 import org.slf4j.Logger;
@@ -15,6 +19,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -39,13 +44,19 @@ public class DataLoader implements CommandLineRunner {
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
     private final AppointmentRepository appointmentRepository;
+    private final InvoiceRepository invoiceRepository;
+    private final PaymentRepository paymentRepository;
 
     public DataLoader(DoctorRepository doctorRepository,
                       PatientRepository patientRepository,
-                      AppointmentRepository appointmentRepository) {
+                      AppointmentRepository appointmentRepository,
+                      InvoiceRepository invoiceRepository,
+                      PaymentRepository paymentRepository) {
         this.doctorRepository = doctorRepository;
         this.patientRepository = patientRepository;
         this.appointmentRepository = appointmentRepository;
+        this.invoiceRepository = invoiceRepository;
+        this.paymentRepository = paymentRepository;
     }
 
     @Override
@@ -53,8 +64,11 @@ public class DataLoader implements CommandLineRunner {
         loadDoctors();
         loadPatients();
         loadAppointments();
-        log.info("Sample data loaded: {} doctors, {} patients, {} appointments",
-                doctorRepository.count(), patientRepository.count(), appointmentRepository.count());
+        loadInvoices();
+        loadPayments();
+        log.info("Sample data loaded: {} doctors, {} patients, {} appointments, {} invoices, {} payments",
+                doctorRepository.count(), patientRepository.count(), appointmentRepository.count(),
+                invoiceRepository.count(), paymentRepository.count());
     }
 
     // ── CSV: id, name, specialization, phone, email, color, active ───────────
@@ -132,6 +146,53 @@ public class DataLoader implements CommandLineRunner {
             a.setEmergency(Boolean.parseBoolean(col(row, 9)));
             a.setCreatedAt(LocalDateTime.now());
             appointmentRepository.save(a);
+        }
+    }
+
+    // ── CSV: id, invoice_number, patient_id, appointment_id, date, items,
+    //         subtotal, gst_rate, gst_amount, grand_total, paid_amount, balance_due, status, notes
+
+    private void loadInvoices() throws Exception {
+        List<String[]> rows = readCsv("data/invoices.csv");
+        for (String[] row : rows) {
+            if (row.length < 13) continue;
+
+            Invoice inv = new Invoice();
+            inv.setId(col(row, 0));
+            inv.setInvoiceNumber(col(row, 1));
+            inv.setPatientId(col(row, 2));
+            String apptId = col(row, 3);
+            inv.setAppointmentId(apptId.isBlank() ? null : apptId);
+            inv.setDate(LocalDate.parse(col(row, 4)));
+            inv.setItems(col(row, 5));
+            inv.setSubtotal(new BigDecimal(col(row, 6)));
+            inv.setGstRate(new BigDecimal(col(row, 7)));
+            inv.setGstAmount(new BigDecimal(col(row, 8)));
+            inv.setGrandTotal(new BigDecimal(col(row, 9)));
+            inv.setPaidAmount(new BigDecimal(col(row, 10)));
+            inv.setBalanceDue(new BigDecimal(col(row, 11)));
+            inv.setStatus(col(row, 12));
+            inv.setNotes(col(row, 13));
+            inv.setCreatedAt(LocalDateTime.now());
+            invoiceRepository.save(inv);
+        }
+    }
+
+    // ── CSV: id, invoice_id, amount, payment_method, notes
+
+    private void loadPayments() throws Exception {
+        List<String[]> rows = readCsv("data/payments.csv");
+        for (String[] row : rows) {
+            if (row.length < 4) continue;
+
+            Payment p = new Payment();
+            p.setId(col(row, 0));
+            p.setInvoiceId(col(row, 1));
+            p.setAmount(new BigDecimal(col(row, 2)));
+            p.setPaymentMethod(col(row, 3));
+            p.setNotes(col(row, 4));
+            p.setPaidAt(LocalDateTime.now());
+            paymentRepository.save(p);
         }
     }
 
