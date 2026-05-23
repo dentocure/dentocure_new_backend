@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -51,6 +52,7 @@ public class PatientController {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Patient list returned with pagination meta")
     })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR') or hasRole('RECEPTIONIST')")
     @GetMapping
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> getPatients(
             @Parameter(description = "Search by name or phone (partial match)", example = "ravi")
@@ -84,6 +86,7 @@ public class PatientController {
                 examples = @ExampleObject(value = """
                     {"error":{"code":"NOT_FOUND","message":"Patient not found with id: PT999"}}""")))
     })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR') or hasRole('RECEPTIONIST')")
     @GetMapping("/{id}")
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> getPatientById(
             @Parameter(description = "Patient ID (e.g. PT001)", example = "PT001")
@@ -108,6 +111,7 @@ public class PatientController {
                 examples = @ExampleObject(value = """
                     {"error":{"code":"CONFLICT","message":"A patient with phone number 9811111111 already exists"}}""")))
     })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('RECEPTIONIST')")
     @PostMapping
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> createPatient(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -142,6 +146,7 @@ public class PatientController {
         @ApiResponse(responseCode = "404", description = "Patient not found"),
         @ApiResponse(responseCode = "409", description = "Phone already used by another patient")
     })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('RECEPTIONIST')")
     @PutMapping("/{id}")
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> updatePatient(
             @Parameter(description = "Patient ID", example = "PT001") @PathVariable String id,
@@ -159,6 +164,7 @@ public class PatientController {
         @ApiResponse(responseCode = "200", description = "Patient deactivated"),
         @ApiResponse(responseCode = "404", description = "Patient not found")
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<com.dentocure.dto.ApiResponse<?>> deletePatient(
             @Parameter(description = "Patient ID", example = "PT001") @PathVariable String id) {
