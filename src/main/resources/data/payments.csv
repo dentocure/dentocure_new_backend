@@ -1,0 +1,4 @@
+id,invoice_id,amount,payment_method,notes
+PAY001,INV001,944.00,Cash,Full payment at counter
+PAY002,INV002,2000.00,UPI,Google Pay — partial advance
+PAY003,INV003,1416.00,Card,Visa debit — full payment
